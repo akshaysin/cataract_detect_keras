@@ -16,17 +16,17 @@ from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras.models import model_from_json
 
-## Read image here in an list
+# Read image here in an list
 path = "input_path"
 listing = os.listdir(path)
 count=size(listing)
 
-## Validate size of an random image is 64*64
+# Validate size of an random image is 64*64
 im_random=cv.imread("input_path//{0}".format(listing[23]))
 im_random.shape
 
-## Convert the image data into an imatrix. imatrix would just be a flat represetation of each image's pixel data in each row.
-## This imatrix is whats gonna be used to create X_train, X_validation and X_test data.
+# Convert the image data into an imatrix. imatrix would just be a flat represetation of each image's pixel data in each row.
+# This imatrix is whats gonna be used to create X_train, X_validation and X_test data.
 imatrix = np.array([cv.imread("input_path//{0}".format(img)).flatten() for img in listing])
 # imatrix = []
 # for img in listing:
@@ -36,13 +36,13 @@ print (imatrix.shape)
 print (type(imatrix))
 print (imatrix.ndim)
 
-## Lets create y, i.e labels. This is whats gonna be used to create Y_train, Y_validation and Y_test data.
+# Lets create y, i.e labels. This is whats gonna be used to create Y_train, Y_validation and Y_test data.
 label=np.ones((count,), dtype=int)
 label[0:1001]=0
 label[1001:2001]=1
 size(label)
 
-## Lets randomnly suffle the data to avoid overfitting
+# Lets randomnly suffle the data to avoid overfitting
 data,label=shuffle(imatrix,label,random_state=2)
 train_data=[data,label]
 
@@ -59,13 +59,13 @@ nb_conv = 3
 (X,y) = (train_data[0],train_data[1])
 X.shape
 
-## Splitting X and y in training and test data
+# Splitting X and y in training and test data
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state=4)
 
-## Splitting X_train and y_train in training and validation data
+# Splitting X_train and y_train in training and validation data
 X_train, X_val, y_train, y_val = train_test_split(X_train,y_train, test_size=0.2, random_state=4)
 
-## Validating the individual sizes
+# Validating the individual sizes
 print ("X_train : {0}".format(X_train.shape))
 print ("y_train :{0}".format(y_train.shape))
 
@@ -75,7 +75,7 @@ print ("y_val : {0}".format(y_val.shape))
 print ("X_test : {0}".format(X_test.shape))
 print ("y_test : {0}".format(y_test.shape))
 
-## Reshaping the data to pass to CNN
+# Reshaping the data to pass to CNN
 X_train = X_train.reshape(X_train.shape[0], 3, 64, 64)
 X_val = X_val.reshape(X_val.shape[0], 3, 64, 64)
 X_test = X_test.reshape(X_test.shape[0], 3, 64, 64)
@@ -84,7 +84,7 @@ y_train = np_utils.to_categorical(y_train, nb_classes)
 y_val = np_utils.to_categorical(y_val, nb_classes)
 y_test = np_utils.to_categorical(y_test, nb_classes)
 
-## Validating the individual sizes
+# Validating the individual sizes
 print ("X_train : {0}".format(X_train.shape))
 print ("y_train :{0}".format(y_train.shape))
 
@@ -104,7 +104,7 @@ X_train /= 255
 X_val /= 255
 X_test /= 255
 
-## Define model now
+# Define model now
 model = Sequential()
 
 model.add(Convolution2D(nb_filters,
@@ -149,7 +149,7 @@ plt.legend(['train', 'val'], loc='upper left')
 plt.show()
 
 
-## Test this trained model on our test data
+# Test this trained model on our test data
 score = model.evaluate(X_test, y_test, verbose=1)
 print ("Test Score :", score[0])
 print ("Test accuracy: ", score[1])
@@ -157,7 +157,7 @@ print (model.predict_classes(X_test[1:5]))
 print (y_test[1:5])
 
 
-## Now lets save the model to disk
+# Now lets save the model to disk
 # serialize model to JSON
 model_json = model.to_json()
 with open("model.json", "w") as json_file:
