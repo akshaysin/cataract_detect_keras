@@ -16,6 +16,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
+from keras.layers import Conv2D, MaxPooling2D
 from keras.models import model_from_json
 
 # Read image here in an list
@@ -51,7 +52,7 @@ train_data = [data, label]
 # Keras Parameters
 batch_size = 32
 nb_classes = 2
-nb_epoch = 20
+nb_epoch = 30
 img_rows, img_col = 128, 128
 img_channels = 3
 nb_filters = 32
@@ -65,63 +66,66 @@ X.shape
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
 
 # Splitting X_train and y_train in training and validation data
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=4)
+# X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=4)
 
 # Validating the individual sizes
 print("X_train : {0}".format(X_train.shape))
 print("y_train :{0}".format(y_train.shape))
 
-print("X_val : {0}".format(X_val.shape))
-print("y_val : {0}".format(y_val.shape))
+# print("X_val : {0}".format(X_val.shape))
+# print("y_val : {0}".format(y_val.shape))
 
 print("X_test : {0}".format(X_test.shape))
 print("y_test : {0}".format(y_test.shape))
 
 # Reshaping the data to pass to CNN
 X_train = X_train.reshape(X_train.shape[0], 3, 128, 128)
-X_val = X_val.reshape(X_val.shape[0], 3, 128, 128)
+# X_val = X_val.reshape(X_val.shape[0], 3, 128, 128)
 X_test = X_test.reshape(X_test.shape[0], 3, 128, 128)
 
 y_train = np_utils.to_categorical(y_train, nb_classes)
-y_val = np_utils.to_categorical(y_val, nb_classes)
+# y_val = np_utils.to_categorical(y_val, nb_classes)
 y_test = np_utils.to_categorical(y_test, nb_classes)
 
 # Validating the individual sizes
 print("X_train : {0}".format(X_train.shape))
 print("y_train :{0}".format(y_train.shape))
 
-print("X_val : {0}".format(X_val.shape))
-print("y_val : {0}".format(y_val.shape))
+# print("X_val : {0}".format(X_val.shape))
+# print("y_val : {0}".format(y_val.shape))
 
 print("X_test : {0}".format(X_test.shape))
 print("y_test : {0}".format(y_test.shape))
 
 # Regularize the data
 X_train = X_train.astype('float32')
-X_val = X_val.astype('float32')
+# X_val = X_val.astype('float32')
 X_test = X_test.astype('float32')
 
 X_train /= 255
-X_val /= 255
+# X_val /= 255
 X_test /= 255
 
 # Define model now
 model = Sequential()
 
-model.add(Convolution2D(nb_filters,
-                        (nb_conv, nb_conv),
-                        border_mode='valid',
-                        activation='relu',
-                        input_shape=(img_channels, img_rows, img_col),
-                        data_format='channels_first'))
+model.add(Conv2D(nb_filters, (nb_conv, nb_conv),
+                 padding="valid",
+                 activation='relu',
+                 input_shape=(img_channels, img_rows, img_col),
+                 data_format='channels_first'))
 
-model.add(Convolution2D(nb_filters, nb_conv, nb_conv, activation='relu'))
+model.add(Conv2D(nb_filters, (nb_conv, nb_conv), activation='relu'))
 model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
 model.add(Dropout(0.5))
 
-model.add(Convolution2D(nb_filters, nb_conv, nb_conv, activation='relu'))
+model.add(Convolution2D(nb_filters, (nb_conv, nb_conv), activation='relu'))
 model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
-model.add(Dropout(0.5))
+model.add(Dropout(0.25))
+
+model.add(Convolution2D(nb_filters, (nb_conv, nb_conv), activation='relu'))
+model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
+model.add(Dropout(0.50))
 
 model.add(Flatten())
 model.add(Dense(128, activation='relu'))
@@ -132,33 +136,32 @@ model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 
-# history = model.fit(X_train, y_train, batch_size=batch_size, epochs=nb_epoch,
-#                     verbose=1, validation_data=(X_val, y_val))
-#
-# # summarize history for accuracy
-# plt.plot(history.history['acc'])
-# plt.plot(history.history['val_acc'])
-# plt.title('model accuracy')
-# plt.ylabel('accuracy')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'val'], loc='upper left')
-# plt.show()
-# # summarize history for loss
-# plt.plot(history.history['loss'])
-# plt.plot(history.history['val_loss'])
-# plt.title('model loss')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'val'], loc='upper left')
-# plt.show()
+history = model.fit(X_train, y_train, batch_size=batch_size, epochs=nb_epoch,
+                    verbose=1, validation_data=(X_test, y_test))
 
-# # Test this trained model on our test data
+# summarize history for accuracy
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+
+# Test this trained model on our test data
 # score = model.evaluate(X_test, y_test, verbose=1)
-# print ("Test Score :", score[0])
-# print ("Test accuracy: ", score[1])
-# print (model.predict_classes(X_test[1:5]))
-# print (y_test[1:5])
-
+# print("Test Score :", score[0])
+# print("Test accuracy: ", score[1])
+# print(model.predict_classes(X_test[1:15]))
+# print(y_test[1:15])
 
 # Now lets save the model to disk
 # serialize model to JSON
